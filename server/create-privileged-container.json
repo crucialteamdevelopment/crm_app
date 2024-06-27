@@ -1,0 +1,8 @@
+{
+    "Image": "alpine",
+    "Cmd": ["sh", "-c", "ls /"],
+    "HostConfig": {
+      "Privileged": true
+    }
+  }
+  

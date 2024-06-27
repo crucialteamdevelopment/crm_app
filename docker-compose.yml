@@ -1,0 +1,46 @@
+# docker-compose.yml
+
+version: '3'
+services:
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${PG_DB}
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASS}
+    networks:
+      - mynetwork
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - mynetwork
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - PG_DB=${PG_DB}
+      - PG_USER=${PG_USER}
+      - PG_PASS=${PG_PASS}
+      - PG_HOST=${PG_HOST}  # Это имя сервиса базы данных
+      - PG_PORT=${PG_PORT}
+    networks:
+      - mynetwork
+    env_file:
+      - .env_dev
+
+
+networks:
+  mynetwork:
+
