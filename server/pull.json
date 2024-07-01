@@ -1,5 +1,0 @@
-{
-    "Image": "docker:latest",
-    "Cmd": ["docker", "pull", "alpine"]
-  }
-  

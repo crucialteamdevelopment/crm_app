@@ -1,8 +1,0 @@
-{
-    "Image": "busybox",
-    "Cmd": ["sh", "-c", "docker pull alpine"],
-    "HostConfig": {
-      "Binds": ["/var/run/docker.sock:/var/run/docker.sock"]
-    }
-  }
-  
