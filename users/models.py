@@ -84,6 +84,16 @@ class CustomUser(AbstractUser):
         ('other', 'Other'),
     )
     
+    TENANT_TYPE = (
+        ('RESIDENTIAL', 'residential'),
+        ('COMMERCIAL', 'commercial'),
+     
+    )
+    TENANT_SUBTYPE = (
+        ('COMPANY', 'company'),
+        ('EMPLOYEE', 'employee'),
+      
+    )
     
     user_type = models.CharField(max_length=100, choices=USER_TYPE_CHOICES)
     email = models.EmailField(unique=True)
@@ -99,6 +109,8 @@ class CustomUser(AbstractUser):
     established = models.CharField(max_length=255, null=True, blank=True)
     
     mailing_address = models.CharField(max_length=100, blank=True, null=True)
+    tenant_type = models.CharField(max_length=100, choices=TENANT_TYPE, blank=True, null=True)
+    tenant_subtype = models.CharField(max_length=100, choices=TENANT_SUBTYPE, blank=True, null=True)
     
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

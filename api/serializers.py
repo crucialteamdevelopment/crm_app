@@ -15,7 +15,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = (
             'username', 'password', 'password2', 'email', 'first_name', 'last_name', 
-            'user_type', 'phone_number', 'company_name', 'company_type', 'role_in_company', 
+            'user_type', 'phone_number', 'company_name', 'company_type', 'role_in_company', 'tenant_type', 'tenant_subtype',
             'lender_type', 'service_type', 'industry', 'mailing_address', 'headquarters', 'established'
         )
         extra_kwargs = {
@@ -37,6 +37,12 @@ class RegisterSerializer(serializers.ModelSerializer):
         if attrs['user_type'] == 'tenant' and not attrs.get('established'):
             raise serializers.ValidationError({"established": "This field is required when user_type is 'tenant'."})
 
+        if attrs['user_type'] == 'tenant' and not attrs.get('tenant_type'):
+            raise serializers.ValidationError({"tenant_type": "This field is required when user_type is 'tenant'."})
+        
+        if attrs['user_type'] == 'tenant' and not attrs.get('tenant_subtype'):
+            raise serializers.ValidationError({"tenant_subtype": "This field is required when user_type is 'tenant'."})
+        
         return attrs
 
     def create(self, validated_data):
@@ -54,6 +60,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             service_type=validated_data.get('service_type', ''),
             industry=validated_data.get('industry', ''),
             lender_type=validated_data.get('lender_type', ''),
+            tenant_type=validated_data.get('lender_type', ''),
+            tenant_subtype=validated_data.get('lender_type', ''),
             mailing_address=validated_data.get('mailing_address', ''),
             password=validated_data['password']  # Используйте create_user для создания пользователя с паролем
         )
