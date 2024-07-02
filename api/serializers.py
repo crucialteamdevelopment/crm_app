@@ -19,8 +19,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             'lender_type', 'service_type', 'industry', 'mailing_address', 'headquarters', 'established'
         )
         extra_kwargs = {
-            'first_name': {'required': True},
-            'last_name': {'required': True},
+            'first_name': {'required': False},
+            'last_name': {'required': False},
             'email': {'required': True},
         }
 
@@ -43,6 +43,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         if attrs['user_type'] == 'tenant' and not attrs.get('tenant_subtype'):
             raise serializers.ValidationError({"tenant_subtype": "This field is required when user_type is 'tenant'."})
         
+        if attrs['user_type'] == 'tenant' and attrs['tenant_type'] == 'commercial':
+            attrs['first_name'] = ''
+            attrs['last_name'] = ''
+        
         return attrs
 
     def create(self, validated_data):
@@ -50,8 +54,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
             user_type=validated_data['user_type'],
             phone_number=validated_data.get('phone_number', ''),
             company_name=validated_data.get('company_name', ''),
@@ -60,9 +64,11 @@ class RegisterSerializer(serializers.ModelSerializer):
             service_type=validated_data.get('service_type', ''),
             industry=validated_data.get('industry', ''),
             lender_type=validated_data.get('lender_type', ''),
-            tenant_type=validated_data.get('lender_type', ''),
-            tenant_subtype=validated_data.get('lender_type', ''),
+            tenant_type=validated_data.get('tenant_type', ''),
+            tenant_subtype=validated_data.get('tenant_subtype', ''),
             mailing_address=validated_data.get('mailing_address', ''),
+            headquarters=validated_data.get('headquarters', ''),
+            established=validated_data.get('established', ''),
             password=validated_data['password']  # Используйте create_user для создания пользователя с паролем
         )
         return user
