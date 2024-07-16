@@ -1,15 +1,22 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-
 from users.models import CustomUser
-
-from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
 
-    
+class CustomUniqueEmailValidator:
+    def __call__(self, value):
+        if CustomUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email is already exists.", code='invalid')
+
+class CustomValidationError(serializers.ValidationError):
+    def __init__(self, detail):
+        self.detail = {"error": detail}
+        super().__init__(detail=self.detail)
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
+    email = serializers.EmailField()
 
     class Meta:
         model = CustomUser
@@ -28,51 +35,51 @@ class RegisterSerializer(serializers.ModelSerializer):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Password fields didn't match."})
 
+        # Проверка уникальности email
+        if CustomUser.objects.filter(email=attrs['email']).exists():
+            raise CustomValidationError(detail="Email is already exists.")
+
         if attrs['user_type'] == 'lender' and not attrs.get('lender_type'):
             raise serializers.ValidationError({"lender_type": "This field is required when user_type is 'lender'."})
 
-        if attrs['user_type'] == 'tenant' and not attrs.get('headquarters'):
-            raise serializers.ValidationError({"headquarters": "This field is required when user_type is 'tenant'."})
+        if attrs['user_type'] == 'tenant' and attrs.get('tenant_subtype') == 'company' and not attrs.get('headquarters'):
+            raise serializers.ValidationError({"headquarters": "This field is required when user_type is 'tenant' and tenant_subtype is 'company'."})
 
-        if attrs['user_type'] == 'tenant' and not attrs.get('established'):
-            raise serializers.ValidationError({"established": "This field is required when user_type is 'tenant'."})
+        if attrs['user_type'] == 'tenant' and attrs.get('tenant_type') == 'commercial' and not attrs.get('established'):
+            raise serializers.ValidationError({"established": "This field is required when user_type is 'tenant' and tenant_type is 'commercial'."})
 
         if attrs['user_type'] == 'tenant' and not attrs.get('tenant_type'):
             raise serializers.ValidationError({"tenant_type": "This field is required when user_type is 'tenant'."})
         
-        if attrs['user_type'] == 'tenant' and not attrs.get('tenant_subtype'):
+        if attrs['user_type'] == 'tenant' and attrs.get('tenant_type') == 'commercial' and not attrs.get('tenant_subtype'):
             raise serializers.ValidationError({"tenant_subtype": "This field is required when user_type is 'tenant'."})
         
-        if attrs['user_type'] == 'tenant' and attrs['tenant_type'] == 'commercial':
+        if attrs['user_type'] == 'tenant' and attrs.get('tenant_type') == 'commercial':
             attrs['first_name'] = ''
             attrs['last_name'] = ''
         
         return attrs
 
     def create(self, validated_data):
-        validated_data.pop('password2')
-        user = CustomUser.objects.create_user(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            first_name=validated_data.get('first_name', ''),
-            last_name=validated_data.get('last_name', ''),
-            user_type=validated_data['user_type'],
-            phone_number=validated_data.get('phone_number', ''),
-            company_name=validated_data.get('company_name', ''),
-            company_type=validated_data.get('company_type', ''),
-            role_in_company=validated_data.get('role_in_company', ''),
-            service_type=validated_data.get('service_type', ''),
-            industry=validated_data.get('industry', ''),
-            lender_type=validated_data.get('lender_type', ''),
-            tenant_type=validated_data.get('tenant_type', ''),
-            tenant_subtype=validated_data.get('tenant_subtype', ''),
-            mailing_address=validated_data.get('mailing_address', ''),
-            headquarters=validated_data.get('headquarters', ''),
-            established=validated_data.get('established', ''),
-            password=validated_data['password']  # Используйте create_user для создания пользователя с паролем
-        )
+        validated_data.pop('password2')  # Убираем поле password2, так как оно не нужно для создания пользователя
+        password = validated_data.pop('password')
+
+        user = CustomUser(**validated_data)
+        user.set_password(password)
+        user.save()
+
         return user
-    
+
+    def validate_email(self, value):
+        validator = CustomUniqueEmailValidator()
+        try:
+            validator(value)
+        except serializers.ValidationError as e:
+            raise CustomValidationError(detail=str(e.detail[0]))
+
+        return value
+
+# Другие сериализаторы остаются без изменений
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
@@ -91,5 +98,3 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ('id', 'username', 'email', 'first_name', 'last_name', 'user_type')
-
-

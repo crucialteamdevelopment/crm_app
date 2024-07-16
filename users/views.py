@@ -6,9 +6,69 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.conf import settings
 from django.contrib.auth import authenticate, logout
+from rest_framework import generics, permissions
+from .models import UserFile, Company, PhoneNumber
+from .serializers import UserFileSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics, permissions
+from .models import Directory, UserFile, CustomUser
+from .serializers import DirectorySerializer, UserFileSerializer, CustomUserSerializer
+from .serializers import CustomUserSerializer, CompanySerializer, PhoneNumberSerializer, ChangePasswordSerializer
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
+# class CustomUserListCreateAPIView(generics.ListCreateAPIView):
+#     queryset = CustomUser.objects.all()
+#     serializer_class = CustomUserSerializer
+#     permission_classes = [permissions.IsAuthenticated]  # Пример разрешения, можете изменить на своё
+
+# class CustomUserDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = CustomUser.objects.all()
+#     serializer_class = CustomUserSerializer
+#     permission_classes = [permissions.IsAuthenticated]  # Пример разрешения, можете изменить на своё
+
+
+
+class ChangePasswordView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        serializer = ChangePasswordSerializer(data=request.data)
+        print(request.data)
+        if serializer.is_valid():
+            old_password = serializer.validated_data['old_password']
+            new_password = serializer.validated_data['new_password']
+
+            if not user.check_password(old_password):
+                return Response({"old_password": ["Wrong password."]}, status=status.HTTP_400_BAD_REQUEST)
+
+            user.set_password(new_password)
+            user.save()
+            return Response({"status": "password set"}, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class CompanyListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+
+class CompanyDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Company.objects.all()
+    serializer_class = CompanySerializer
+
+class PhoneNumberListCreateAPIView(generics.ListCreateAPIView):
+    queryset = PhoneNumber.objects.all()
+    serializer_class = PhoneNumberSerializer
+
+class PhoneNumberDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = PhoneNumber.objects.all()
+    serializer_class = PhoneNumberSerializer
+    
 class LoginView(APIView):
     def post(self, request):
+        print("LOGIN:")      
+        print(request.data)
         email = request.data.get('email')
         password = request.data.get('password')
 
@@ -97,3 +157,39 @@ class LogoutView(APIView):
         response.delete_cookie('refresh_token', samesite='None')  # Delete refresh token cookie
 
         return response
+
+
+class DirectoryListCreateView(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = DirectorySerializer
+
+    def get_queryset(self):
+        return Directory.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class DirectoryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = DirectorySerializer
+
+    def get_queryset(self):
+        return Directory.objects.filter(user=self.request.user)
+
+class UserFileListCreateView(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserFileSerializer
+
+    def get_queryset(self):
+        return UserFile.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class UserFileDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserFileSerializer
+
+    def get_queryset(self):
+        return UserFile.objects.filter(user=self.request.user)
+

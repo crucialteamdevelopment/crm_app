@@ -7,13 +7,15 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from users.views import LoginView, CustomTokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('api/properties/', include('properties.urls')), 
     path('api/support/', include('support.urls')),
+    path('api/users/', include('users.urls')),
+    path('api/bookmarks/', include('bookmarks.urls')),
+    
 ]
 
 if settings.DEBUG:
