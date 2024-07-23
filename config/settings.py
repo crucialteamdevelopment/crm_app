@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'main',
     'users',
     'tasks',
-    'support'
+    'support',
+    'bookmarks',
 ]
 
 

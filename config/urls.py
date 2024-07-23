@@ -14,6 +14,7 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('api/properties/', include('properties.urls')), 
     path('api/support/', include('support.urls')),
+    path('api/bookmarks/', include('bookmarks.urls')),
 ]
 
 if settings.DEBUG:

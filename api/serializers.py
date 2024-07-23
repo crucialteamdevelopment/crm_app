@@ -31,11 +31,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         if attrs['user_type'] == 'lender' and not attrs.get('lender_type'):
             raise serializers.ValidationError({"lender_type": "This field is required when user_type is 'lender'."})
 
-        if attrs['user_type'] == 'tenant' and not attrs.get('headquarters'):
-            raise serializers.ValidationError({"headquarters": "This field is required when user_type is 'tenant'."})
+        if attrs['user_type'] == 'tenant':
+            if attrs['tenant_subtype']:
+                if attrs['tenant_subtype'] == 'company' and not attrs.get('headquarters'):
+                    raise serializers.ValidationError({"headquarters": "This field is required when user_type is 'tenant'."})
 
-        if attrs['user_type'] == 'tenant' and not attrs.get('established'):
-            raise serializers.ValidationError({"established": "This field is required when user_type is 'tenant'."})
+        if attrs['user_type'] == 'tenant':
+            if attrs['tenant_subtype']:
+                if attrs['tenant_subtype'] == 'company' and not attrs.get('established'):
+                    raise serializers.ValidationError({"established": "This field is required when user_type is 'tenant'."})
 
         if attrs['user_type'] == 'tenant' and not attrs.get('tenant_type'):
             raise serializers.ValidationError({"tenant_type": "This field is required when user_type is 'tenant'."})

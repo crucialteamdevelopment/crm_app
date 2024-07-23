@@ -8,6 +8,8 @@ class CustomUser(AbstractUser):
     USER_TYPE_CHOICES = (
         ('broker_real_estate', 'Broker (Real Estate)'),
         ('broker_mortgage', 'Broker (Mortgage)'),
+        ('salesperson_real_estate', 'Salesperson Real Estate'),
+        ('salesperson_mortgage', 'Mortgage salesperson'),
         ('owner', 'Owner'),
         ('lender', 'Lender'),
         ('service_provider', 'Service Provider'),
@@ -85,19 +87,19 @@ class CustomUser(AbstractUser):
     )
     
     TENANT_TYPE = (
-        ('RESIDENTIAL', 'residential'),
-        ('COMMERCIAL', 'commercial'),
-     
+        ('residential', 'RESIDENTIAL'),
+        ('commercial', 'COMMERCIAL'),
     )
+    
     TENANT_SUBTYPE = (
-        ('COMPANY', 'company'),
-        ('EMPLOYEE', 'employee'),
-      
+        ('company', 'COMPANY'),
+        ('employee', 'EMPLOYEE'),
     )
+    
     
     user_type = models.CharField(max_length=100, choices=USER_TYPE_CHOICES)
     email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True)
     company_name = models.CharField(max_length=100, blank=True, null=True)
     
     company_type = models.CharField(max_length=100, choices=COMPANY_TYPE_CHOICES, blank=True, null=True)
