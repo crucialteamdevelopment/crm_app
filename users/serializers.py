@@ -2,17 +2,7 @@ from rest_framework import serializers
 from .models import CompanyType, RoleInCompany, Industry, ServiceType, TenantType, TenantSubtype, Company, PhoneNumber, Directory, UserFile, CustomUser
 
 
-class CustomUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = [
-            'id', 'username', 'first_name', 'last_name', 
-            'is_superuser', 'is_staff', 'is_active', 'date_joined',
-            'user_type', 'email', 'phone_number', 'company_name',
-            'lender_type', 'headquarters', 'established', 'mailing_address',
-            'company_type', 'role_in_company', 'industry', 'service_type',
-            'tenant_type', 'tenant_subtype'
-        ]
+
         
         
 class CompanyTypeSerializer(serializers.ModelSerializer):
@@ -81,3 +71,19 @@ class UserFileSerializer(serializers.ModelSerializer):
         model = UserFile
         fields = ['id', 'user', 'directory', 'file', 'uploaded_at', 'file_type', 'tag', 'description']
         read_only_fields = ['user', 'uploaded_at']
+        
+        
+class CustomUserSerializer(serializers.ModelSerializer):
+    phone_numbers = PhoneNumberSerializer()
+    companies = CompanySerializer()
+    
+    class Meta:
+        model = CustomUser
+        fields = [
+            'id', 'username', 'first_name', 'last_name', 
+            'is_superuser', 'is_staff', 'is_active', 'date_joined',
+            'user_type', 'email', 'phone_number', 'company_name',
+            'lender_type', 'headquarters', 'established', 'mailing_address',
+            'company_type', 'role_in_company', 'industry', 'service_type',
+            'tenant_type', 'tenant_subtype', 'companies', 'phone_numbers'
+        ]
