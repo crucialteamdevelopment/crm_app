@@ -16,15 +16,31 @@ from rest_framework.permissions import IsAuthenticated
 
 from django.conf import settings
 
+from drf_yasg.utils import swagger_auto_schema
 
 User = get_user_model()
 
-        
+
+class TestView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Returns a simple status message",
+        responses={200: "OK"},
+        tags=['test']
+    )
+    def get(self, request):
+        return Response({"status": "ok!"})
         
 class PasswordResetView(generics.GenericAPIView):
     permission_classes = (AllowAny,)
     serializer_class = PasswordResetSerializer
 
+    @swagger_auto_schema(
+        operation_description="Reset users password",
+        responses={200: "OK"},
+        tags=['Auth']
+    )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -58,6 +74,12 @@ class PasswordResetConfirmView(generics.GenericAPIView):
     permission_classes = (AllowAny,)
     serializer_class = SetNewPasswordSerializer
 
+    @swagger_auto_schema(
+        operation_description="Reset users password confirmation",
+        responses={200: "OK"},
+        tags=['Auth']
+    )
+        
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -87,10 +109,11 @@ class PasswordResetConfirmView(generics.GenericAPIView):
         return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
 class RegisterView(generics.CreateAPIView):
+    
     queryset = CustomUser.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
-
+    
 class UserDetail(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = UserSerializer

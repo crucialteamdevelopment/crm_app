@@ -42,26 +42,54 @@ class PropertyUnitSerializer(serializers.ModelSerializer):
 class PropertySerializer(serializers.ModelSerializer):
     images = PropertyImageSerializer(many=True, read_only=True)
     units = PropertyUnitSerializer(many=True, read_only=True)
+    property_type = PropertyTypeSerializer()  # Вложенный сериализатор для чтения
 
     class Meta:
         model = Property
         fields = [
             'id', 'street_address', 'zip_code', 'state', 'city', 'neighborhood', 
             'building_name', 'number_of_floors', 'holding_company', 'property_type', 
-            'owner', 'images', 'units'
+            'owner', 'images', 'units', 'status'
         ]
         read_only_fields = ['id', 'owner']
 
+    def update(self, instance, validated_data):
+        property_type_data = validated_data.pop('property_type', None)
+        
+        # Обновляем поля модели
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        # Обновляем вложенные данные
+        if property_type_data:
+            property_type_name = property_type_data.get('name')
+            if property_type_name:
+                property_type, created = PropertyType.objects.get_or_create(name=property_type_name)
+                instance.property_type = property_type
+
+        instance.save()
+        return instance
+
+
 class CreatePropertySerializer(serializers.ModelSerializer):
+    property_type = serializers.CharField()
+
     class Meta:
         model = Property
         fields = [
             'street_address', 'zip_code', 'state', 'city', 'neighborhood', 
             'building_name', 'number_of_floors', 'holding_company', 'property_type', 
-            'owner'
+            'owner', 'status'
         ]
         read_only_fields = ['id', 'owner']
 
     def create(self, validated_data):
+        property_type_name = validated_data.pop('property_type')
+
+        # Проверяем наличие property_type в базе данных
+        property_type, created = PropertyType.objects.get_or_create(name=property_type_name)
+
         validated_data['owner'] = self.context['request'].user
+        validated_data['property_type'] = property_type
+
         return super().create(validated_data)

@@ -3,26 +3,14 @@ from users.models import CustomUser
 from django.conf import settings
 
 
-# Create your models here.
-
-
 class Property(models.Model):
     class Meta:
         db_table = 'properties'
 
-    PROPERTY_TYPE_CHOICES = [
-        ('office', 'Office'),
-        ('industrial', 'Industrial'),
-        ('retail', 'Retail'),
-        ('shopping_center', 'Shopping Center'),
-        ('multifamily', 'Multifamily'),
-        ('specialty', 'Specialty'),
-        ('healthcare', 'Healthcare'),
-        ('hospitality', 'Hospitality'),
-        ('sports_entertainment', 'Sports and Entertainment'),
-        ('land', 'Land'),
-        ('residential', 'Residential'),
-        ('restaurant', 'Restaurant'),
+    STATUS_CHOICES = [
+        ('My_property', 'My Property'),
+        ('Looking_at', 'Looking At'),
+        ('Archived', 'Archived'),
     ]
 
     street_address = models.CharField(max_length=255)
@@ -33,8 +21,9 @@ class Property(models.Model):
     building_name = models.CharField(max_length=150, null=True, blank=True)
     number_of_floors = models.PositiveIntegerField()
     holding_company = models.CharField(max_length=100)
-    property_type = models.CharField(max_length=50, choices=PROPERTY_TYPE_CHOICES)
+    property_type = models.ForeignKey('PropertyType', on_delete=models.CASCADE, default=1)
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='properties')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='my_property')
 
     def __str__(self):
         return f'{self.property_type} at {self.street_address}'
@@ -44,7 +33,7 @@ class PropertyType(models.Model):
         db_table = 'properties_types'
 
     name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.name
