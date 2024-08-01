@@ -74,9 +74,9 @@ class UserFileSerializer(serializers.ModelSerializer):
         
         
 class CustomUserSerializer(serializers.ModelSerializer):
-    phone_numbers = PhoneNumberSerializer()
-    companies = CompanySerializer()
-    
+    companies = CompanySerializer(many=True, read_only=True)
+    phone_numbers = PhoneNumberSerializer(many=True, read_only=True)
+
     class Meta:
         model = CustomUser
         fields = [
