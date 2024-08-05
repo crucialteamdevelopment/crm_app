@@ -35,9 +35,6 @@ class CustomUser(AbstractUser):
     tenant_type = models.ForeignKey('TenantType', on_delete=models.SET_NULL, null=True, blank=True)
     tenant_subtype = models.ForeignKey('TenantSubtype', on_delete=models.SET_NULL, null=True, blank=True)
     
-    companies = models.ManyToManyField('Company', related_name='users')
-    phone_numbers = models.ManyToManyField('PhoneNumber', related_name='users')
-    
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
@@ -97,7 +94,9 @@ class Company(models.Model):
     name = models.CharField(max_length=100)
     about = models.TextField(blank=True, null=True)
     company_type = models.ForeignKey(CompanyType, on_delete=models.CASCADE, related_name='companies', null=True)
-
+    user = models.ManyToManyField('CustomUser', related_name='companies', blank=True)
+    
+    
     def __str__(self):
         return self.name
 
@@ -106,7 +105,7 @@ class Company(models.Model):
 class PhoneNumber(models.Model):
     number = models.CharField(max_length=15)
     title = models.CharField(max_length=15, null=True, blank=True)
-
+    user = models.ManyToManyField('CustomUser', related_name='phone_numbers', blank=True)
     def __str__(self):
         return self.number
     

@@ -47,12 +47,29 @@ class ChangePasswordSerializer(serializers.Serializer):
         return data
     
     
+
+
 class CompanySerializer(serializers.ModelSerializer):
+    company_type = serializers.CharField()
+
     class Meta:
         model = Company
         fields = ['id', 'name', 'about', 'company_type']
 
+    def create(self, validated_data):
+        company_type_name = validated_data.pop('company_type')
+        company_type, created = CompanyType.objects.get_or_create(name=company_type_name)
+        company = Company.objects.create(company_type=company_type, **validated_data)
+        return company
 
+    def update(self, instance, validated_data):
+        if 'company_type' in validated_data:
+            company_type_name = validated_data.pop('company_type')
+            company_type, created = CompanyType.objects.get_or_create(name=company_type_name)
+            instance.company_type = company_type
+        return super().update(instance, validated_data)
+    
+    
 class PhoneNumberSerializer(serializers.ModelSerializer):
     class Meta:
         model = PhoneNumber
