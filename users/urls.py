@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import (CompanyTypeListCreate, CompanyTypeRetrieveUpdateDestroy,
+from .views import (CompanyTypeListCreate, CompanyTypeRetrieveUpdateDestroy, LenderTypeListCreateAPIView, LenderTypeRetrieveUpdateDestroyAPIView,
                     RoleInCompanyListCreate, RoleInCompanyRetrieveUpdateDestroy,
                     IndustryListCreate, IndustryRetrieveUpdateDestroy,
                     ServiceTypeListCreate, ServiceTypeRetrieveUpdateDestroy,
@@ -32,4 +32,7 @@ urlpatterns = [
     
     path('tenant-subtypes/', TenantSubtypeListCreate.as_view(), name='tenantsubtype-list-create'),
     path('tenant-subtypes/<int:pk>/', TenantSubtypeRetrieveUpdateDestroy.as_view(), name='tenantsubtype-detail'),
+    path('lender-types/', LenderTypeListCreateAPIView.as_view(), name='lender-type-list-create'),
+    path('lender-types/<int:pk>/', LenderTypeRetrieveUpdateDestroyAPIView.as_view(), name='lender-type-detail'),
+
 ]

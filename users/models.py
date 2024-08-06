@@ -27,7 +27,7 @@ class CustomUser(AbstractUser):
     role_in_company = models.ForeignKey('RoleInCompany', on_delete=models.SET_NULL, null=True, blank=True)
     industry = models.ForeignKey('Industry', on_delete=models.SET_NULL, null=True, blank=True)
     service_type = models.ForeignKey('ServiceType', on_delete=models.SET_NULL, null=True, blank=True)
-    lender_type = models.CharField(max_length=255, null=True, blank=True)
+    lender_type = models.ForeignKey('LenderType', on_delete=models.SET_NULL, null=True, blank=True)
     headquarters = models.CharField(max_length=255, null=True, blank=True)
     established = models.CharField(max_length=255, null=True, blank=True)
     
@@ -43,12 +43,12 @@ class CustomUser(AbstractUser):
 
 
 
-# class LenderType(models.Model):
-#     name = models.CharField(max_length=100)
-#     description = models.CharField(max_length=100, blank=True, null=True)
+class LenderType(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.CharField(max_length=100, blank=True, null=True)
 
-#     def __str__(self):
-#         return self.name
+    def __str__(self):
+        return self.name
     
     
 class CompanyType(models.Model):

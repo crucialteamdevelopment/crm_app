@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import CompanyType, RoleInCompany, Industry, ServiceType, TenantType, TenantSubtype, Company, PhoneNumber, Directory, UserFile, CustomUser
+from .models import CompanyType, RoleInCompany, Industry, ServiceType, \
+    TenantType, TenantSubtype, Company, PhoneNumber, Directory, UserFile, CustomUser, LenderType
 
 
 
@@ -46,7 +47,25 @@ class ChangePasswordSerializer(serializers.Serializer):
             raise serializers.ValidationError({"new_password": "New passwords must match."})
         return data
     
-    
+
+class LenderTypeSerializer(serializers.ModelSerializer):
+    name = serializers.CharField()  # Поле для приема текстового значения
+
+    class Meta:
+        model = LenderType
+        fields = ['id', 'name']
+
+    def create(self, validated_data):
+        name = validated_data.pop('name')
+        lender_type, created = LenderType.objects.get_or_create(name=name)
+        return lender_type
+
+    def update(self, instance, validated_data):
+        if 'name' in validated_data:
+            name = validated_data.pop('name')
+            instance.name = name
+            instance.save()
+        return instance  
 
 
 class CompanySerializer(serializers.ModelSerializer):

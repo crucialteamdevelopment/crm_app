@@ -9,16 +9,15 @@ from django.contrib.auth import authenticate, logout
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from rest_framework import generics
-from .models import CompanyType, RoleInCompany, Industry, ServiceType, TenantType, TenantSubtype, Company, PhoneNumber, CustomUser
-from .serializers import CompanyTypeSerializer, RoleInCompanySerializer, IndustrySerializer, \
-    ServiceTypeSerializer, TenantTypeSerializer, TenantSubtypeSerializer, ChangePasswordSerializer, CompanySerializer, PhoneNumberSerializer
-
-from rest_framework.authentication import TokenAuthentication
-from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from .models import CompanyType, RoleInCompany, Industry, ServiceType, TenantType, TenantSubtype, Company, PhoneNumber, CustomUser, LenderType
 
-from .serializers import CustomUserSerializer
+from .serializers import CompanyTypeSerializer, RoleInCompanySerializer, IndustrySerializer, \
+    ServiceTypeSerializer, TenantTypeSerializer, TenantSubtypeSerializer, ChangePasswordSerializer,\
+        CompanySerializer, PhoneNumberSerializer, CustomUserSerializer, LenderTypeSerializer
+
+
 from rest_framework.decorators import api_view
 
 
@@ -96,42 +95,6 @@ class LoginView(APIView):
             return Response({'error': 'Unable to log in with the provided credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
     
-# class LoginView(APIView):
-#     authentication_classes = (TokenAuthentication,)
-#     def post(self, request):
-#         email = request.data.get('email')
-#         password = request.data.get('password')
-
-#         user = authenticate(request=request, email=email, password=password)
-
-#         if user is not None:
-#             # Create access token and refresh token
-#             refresh_token = RefreshToken.for_user(user)
-#             refresh_token.set_exp(lifetime=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'])
-
-#             access_token = AccessToken.for_user(user)
-#             access_token.set_exp(lifetime=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'])
-
-#             # Get access token expiration time in timestamp format
-#             access_token_expiration_timestamp = access_token['exp']
-
-#             # Cookie name and value
-#             cookie_name = 'refresh_token'
-#             cookie_value = str(refresh_token)
-
-#             # Set cookie in the response
-#             response = Response({
-#                 'access_token': str(access_token),
-#                 'access_token_expiration': access_token_expiration_timestamp,
-#             })
-#             expires = timezone.now() + settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
-#             response.set_cookie(cookie_name, cookie_value, expires=expires, httponly=True, samesite='None', secure=True)
-
-#             return response
-
-#         else:
-#             return Response({'error': 'Unable to log in with the provided credentials'}, status=status.HTTP_400_BAD_REQUEST)
-
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         # Get refresh token from cookie
@@ -297,11 +260,11 @@ class CompanyListCreateAPIView(generics.ListCreateAPIView):
         return response
 
 
-
 class CompanyDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
     permission_classes = [AllowAny]
+
 
 class PhoneNumberListCreateAPIView(generics.ListCreateAPIView):
     queryset = PhoneNumber.objects.all()
@@ -329,3 +292,29 @@ class PhoneNumberDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PhoneNumberSerializer
     permission_classes = [AllowAny]
     
+    
+class LenderTypeListCreateAPIView(generics.ListCreateAPIView):
+    queryset = LenderType.objects.all()
+    serializer_class = LenderTypeSerializer
+    permission_classes = [AllowAny]
+
+    def perform_create(self, serializer):
+        instance = serializer.save()
+        self.return_instance(instance)
+
+    def return_instance(self, instance):
+        response_serializer = self.get_serializer(instance)
+        self.headers['Location'] = response_serializer.data['id']
+        self.response_data = response_serializer.data
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        if hasattr(self, 'response_data'):
+            response.data = self.response_data
+        return response
+ 
+
+class LenderTypeRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = LenderType.objects.all()
+    serializer_class = LenderTypeSerializer
+    permission_classes = [AllowAny]   
